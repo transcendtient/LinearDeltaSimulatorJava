@@ -8,4 +8,4 @@ You can slice your own objects, with your own settings. Just slice them with the
 
 Use the sliders to move the effector. I allowed extreme ranges in the code.
 
-Acceleration is not implemented yet.
+Although movement speed is dictated by the GCode, acceleration is not implemented yet.
