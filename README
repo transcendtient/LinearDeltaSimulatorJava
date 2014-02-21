@@ -1,0 +1,11 @@
+1) Download the version you want and the *.gcode file.
+2) Compile "javac VERSION"
+3) Run "java version"
+
+You can slice your own objects, with your own settings. Just slice them with the bed set to (0,0) like a normal delta.
+
+Use the sliders to move the effector. I allowed extreme ranges in the code.
+
+Use the "Load" to load the calibration GCode file and it will simulate the movement of the printer.
+
+Acceleration is not implemented yet.
