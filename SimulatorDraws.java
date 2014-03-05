@@ -48,12 +48,18 @@ public class SimulatorDraws extends JFrame
   private double[] railX = {perimeter/2,-Math.sqrt(Math.pow(railOffset,2)-Math.pow(perimeter,2)/4)};
   private double[] railY = {-perimeter/2,-Math.sqrt(Math.pow(railOffset,2)-Math.pow(perimeter,2)/4)};
   private double[] railZ = {0,perimeter*Math.sqrt(3)/2-Math.sqrt(Math.pow(railOffset,2)-Math.pow(perimeter,2)/4)};
+
+  //Speed Constraints and locations
+  private int maxFeedrate = 200;
+  private int maxAcceleration = 9000;
+  private int printAcceleration = 3000;//for extruder also
   private int timeStep=10;
   private ArrayList<String> vertexList;
+
+  //Draw Extruded
   private ArrayList<double[]> extruded;
 
-  public SimulatorDraws()
-  {
+  public SimulatorDraws(){
     ActionHandler ah=new ActionHandler();
     ChangeHandler ch=new ChangeHandler();
     JMenuBar jmb=new JMenuBar();
@@ -344,25 +350,26 @@ public class SimulatorDraws extends JFrame
     {
       long currTime;
       long prevTime;
-      double acceleration = 3000;//can go from 0-x in one second
-      double jerk = 20;//maximum instantaneous speed increase
       double[][] point = vertexListToArray();
       double rise=0;
       double run=0;
+      double deltaZ=0;
       double steps=0;
-      double feedRate=0;
+      double feedRate=0;//in mm/min
       double prevExtruded=0;
       try{
         prevTime=System.currentTimeMillis();  
         //get this point and next point to get length
         for(int i=0;i<point.length;i++){
           //get distance
-          rise = point[i+1][1]-point[i][1];//change in y
           run = point[i+1][0]-point[i][0];//change in x
+          rise = point[i+1][1]-point[i][1];//change in y
+          deltaZ = point[i+1][2]-point[i][2];//change in z
           double distance = Math.sqrt(Math.pow(run,2) + Math.pow(rise,2));
+          distance = Math.sqrt(Math.pow(distance,2) + Math.pow(deltaZ,2));
           //get feedrate in mm/minute, convert to mm/s
           if((int)point[i][4]!=0){
-            feedRate = point[i][4]/60;
+            feedRate = point[i+1][4]/60;
           }
           if(point[i][3]!=prevExtruded){
             extruded.add(new double[]{point[i][0],point[i][1],point[i][2],
@@ -370,9 +377,12 @@ public class SimulatorDraws extends JFrame
             prevExtruded=point[i][3];
           }
           steps = (distance / (feedRate/1000));//how long it takes to do the move
-          System.out.println("feed"+feedRate);
+          System.out.println("feed"+feedRate*60);
           System.out.println("distance"+distance);
           System.out.println("steps"+steps);
+          System.out.println("x"+x+"y"+y);
+          System.out.println(point[i][0]+","+point[i][1]+","+point[i][2]+","+point[i][3]+","+point[i][4]);
+          System.out.println(point[i+1][0]+","+point[i+1][1]+","+point[i+1][2]+","+point[i+1][3]+","+point[i+1][4]);
           int chop = (int)(steps/timeStep);//divide time into frames
           int counter=1;
           steps=chop;
@@ -383,16 +393,17 @@ public class SimulatorDraws extends JFrame
           sidePanel.repaint();
           
           while(counter<chop){  
-            System.out.println("this"+point[i][0]+"next"+point[i+1][1]);
+           /* System.out.println("this"+point[i][0]+"next"+point[i+1][1]);
             System.out.println("counter"+counter+"chop"+chop);
             System.out.println("feed"+feedRate);
             System.out.println("distance"+distance);
             System.out.println("steps"+steps);
-            System.out.println("rise"+rise/steps+"run"+run/steps);
+            System.out.println("rise"+rise/steps+"run"+run/steps);*/
             //cut move into steps
             x=x+run/steps;
             y=y+rise/steps;
-            System.out.println("x"+x+"y"+y);
+            z=z+deltaZ/steps;
+            //System.out.println("x"+x+"y"+y);
             topPanel.repaint();
             sidePanel.repaint();
             currTime=System.currentTimeMillis();
@@ -414,6 +425,6 @@ public class SimulatorDraws extends JFrame
 
   public static void main(String[] args)
   {
-    new SimulatorMine2();
+    new SimulatorDraws();
   }
 }
